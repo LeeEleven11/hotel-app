@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>房间列表</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <h1>{{ menuTitle }}</h1>
+    <h2>房间列表</h2>
+    {% if rooms %}
+    <table>
+        <thead>
+            <tr>
+                <th>房间编号</th>
+                <th>楼层</th>
+                <th>是否有景观</th>
+                <th>是否已入住</th>
+                <th>备注</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for room in rooms %}
+            <tr>
+                <td>{{ room[0] }}</td>
+                <td>{{ room[1] }}</td>
+                <td>{{ '是' if room[2] else '否' }}</td>
+                <td>{{ '是' if room[3] else '否' }}</td>
+                <td>{{ room[4] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>暂无房间信息。</p>
+    {% endif %}
+    <a href="{{ url_for('index.index') }}">返回主页</a>
+</body>
+
+</html>

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Database Operations</h1>
+
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+
+    <h2>Add Room</h2>
+    <form id="addRoomForm" method="post">
+        <input type="hidden" name="action" value="add">
+        <input type="number" name="room_id" placeholder="Room ID" required>
+        <input type="number" name="floor" placeholder="Floor" required>
+        <label>Has View: <input type="checkbox" name="has_view"></label>
+        <label>Occupied: <input type="checkbox" name="occupied"></label>
+        <textarea name="comment" placeholder="Comment"></textarea>
+        <button type="submit">Add Room</button>
+    </form>
+
+    <h2>Update Room</h2>
+    <form id="updateRoomForm" method="post">
+        <input type="hidden" name="action" value="update">
+        <select name="room_id" required>
+            <option value="">Select Room</option>
+            {% for room in rooms %}
+            <option value="{{ room.id }}">{{ room.id }}</option>
+            {% endfor %}
+        </select>
+        <input type="number" name="floor" placeholder="Floor">
+        <label>Has View: <input type="checkbox" name="has_view"></label>
+        <label>Occupied: <input type="checkbox" name="occupied"></label>
+        <textarea name="comment" placeholder="Comment"></textarea>
+        <button type="submit">Update Room</button>
+    </form>
+
+    <h2>Rooms List</h2>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Floor</th>
+            <th>Has View</th>
+            <th>Occupied</th>
+            <th>Comment</th>
+        </tr>
+        {% for room in rooms %}
+        <tr>
+            <td>{{ room.id }}</td>
+            <td>{{ room.floor }}</td>
+            <td>{{ 'Yes' if room.hasView else 'No' }}</td>
+            <td>{{ 'Yes' if room.occupied else 'No' }}</td>
+            <td>{{ room.comment }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <script>
+        // 表单提交处理
+        document.getElementById('addRoomForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            submitForm(this);
+        });
+
+        document.getElementById('updateRoomForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            submitForm(this);
+        });
+
+        function submitForm(form) {
+            const formData = new FormData(form);
+            fetch('{{ url_for('database') }}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                alert('An error occurred: ' + error);
+            });
+        }
+    </script>
+{% endblock %}

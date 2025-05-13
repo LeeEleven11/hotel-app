@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>RDS Instances</h1>
+
+    <table>
+        <tr>
+            <th>Identifier</th>
+            <th>Engine</th>
+            <th>Version</th>
+            <th>Status</th>
+            <th>Endpoint</th>
+            <th>Port</th>
+        </tr>
+        {% for instance in instances %}
+        <tr>
+            <td>{{ instance.db_instance_identifier }}</td>
+            <td>{{ instance.engine }}</td>
+            <td>{{ instance.engine_version }}</td>
+            <td>{{ instance.db_instance_status }}</td>
+            <td>{{ instance.endpoint }}</td>
+            <td>{{ instance.port }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+{% endblock %}

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>添加房间信息</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <h1>{{ menuTitle }}</h1>
+    <h2>添加房间信息</h2>
+    <form action="{{ url_for('add.add_room') }}" method="post">
+        <label for="room_id">房间编号:</label>
+        <input type="number" id="room_id" name="room_id" required><br>
+        <label for="floor">楼层:</label>
+        <input type="number" id="floor" name="floor" required><br>
+        <label for="has_view">是否有景观:</label>
+        <input type="checkbox" id="has_view" name="has_view"><br>
+        <label for="occupied">是否已入住:</label>
+        <input type="checkbox" id="occupied" name="occupied"><br>
+        <label for="comment">备注:</label>
+        <textarea id="comment" name="comment"></textarea><br>
+        <input type="submit" value="添加">
+    </form>
+    <a href="{{ url_for('index.index') }}">返回主页</a>
+</body>
+
+</html>
