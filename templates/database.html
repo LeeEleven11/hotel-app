@@ -7,13 +7,35 @@
         <p class="error">{{ error }}</p>
     {% endif %}
 
+    <h2>Rooms List</h2>
+    <table>
+        <tr>
+            <th>Room No</th>
+            <th>Floor</th>
+            <th>Has View</th>
+            <th>Occupied</th>
+            <th>Comment</th>
+        </tr>
+        {% for room in rooms %}
+        <tr>
+            <td>{{ room.id }}</td>
+            <td>{{ room.floor }}</td>
+            <td>{{ 'Yes' if room.has_view else 'No' }}</td>
+            <td>{{ 'Yes' if room.occupied else 'No' }}</td>
+            <td>{{ room.comment }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
     <h2>Add Room</h2>
-    <form id="addRoomForm" method="post">
+    <form id="addRoomForm" method="POST" action="/database">
         <input type="hidden" name="action" value="add">
-        <input type="number" name="room_id" placeholder="Room ID" required>
+        <input type="text" name="room_id" placeholder="Room ID" required>
         <input type="number" name="floor" placeholder="Floor" required>
-        <label>Has View: <input type="checkbox" name="has_view"></label>
-        <label>Occupied: <input type="checkbox" name="occupied"></label>
+        <input type="checkbox" name="has_view" id="hasView">
+        <label for="hasView">Has View</label>
+        <input type="checkbox" name="occupied" id="occupied">
+        <label for="occupied">Occupied</label>
         <textarea name="comment" placeholder="Comment"></textarea>
         <button type="submit">Add Room</button>
     </form>
@@ -24,7 +46,7 @@
         <select name="room_id" required>
             <option value="">Select Room</option>
             {% for room in rooms %}
-            <option value="{{ room.id }}">{{ room.id }}</option>
+            <option value="{{ room.room_id }}">{{ room.room_id }}</option>
             {% endfor %}
         </select>
         <input type="number" name="floor" placeholder="Floor">
@@ -34,56 +56,88 @@
         <button type="submit">Update Room</button>
     </form>
 
-    <h2>Rooms List</h2>
-    <table>
-        <tr>
-            <th>ID</th>
-            <th>Floor</th>
-            <th>Has View</th>
-            <th>Occupied</th>
-            <th>Comment</th>
-        </tr>
-        {% for room in rooms %}
-        <tr>
-            <td>{{ room.id }}</td>
-            <td>{{ room.floor }}</td>
-            <td>{{ 'Yes' if room.hasView else 'No' }}</td>
-            <td>{{ 'Yes' if room.occupied else 'No' }}</td>
-            <td>{{ room.comment }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-
     <script>
         // 表单提交处理
         document.getElementById('addRoomForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            submitForm(this);
+
+            // 使用FormData自动收集表单数据
+            const formData = new FormData(this);
+
+            console.log('Sending form data:', formData);
+
+            fetch('/database', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Response data:', data);
+                if (data.success) {
+                    alert('Room added successfully!');
+                    // 重置表单
+                    this.reset();
+                    // 更新表格数据（可选）
+                    updateRoomsTable();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while submitting the form.');
+            });
         });
 
         document.getElementById('updateRoomForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            submitForm(this);
-        });
 
-        function submitForm(form) {
-            const formData = new FormData(form);
+            const formData = new FormData(this);
+            console.log("Sending form data:", formData);
+
             fetch('{{ url_for('database') }}', {
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log("Response status:", response.status);
+                return response.json();
+            })
             .then(data => {
+                console.log("Response data:", data);
                 if (data.success) {
                     alert(data.message);
+                    // 刷新页面
                     location.reload();
                 } else {
                     alert(data.message);
                 }
             })
             .catch(error => {
+                console.error("An error occurred:", error);
                 alert('An error occurred: ' + error);
             });
+        });
+
+        // 可选：动态更新表格数据而不刷新页面
+        function updateRoomsTable() {
+            fetch('/database')
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const newTable = doc.querySelector('table');
+
+                    if (newTable) {
+                        document.querySelector('table').replaceWith(newTable);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating table:', error);
+                });
         }
     </script>
 {% endblock %}

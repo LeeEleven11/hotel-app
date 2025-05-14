@@ -3,6 +3,11 @@ from botocore.exceptions import ClientError
 import json
 
 
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+
+
 class AWSUtils:
     def __init__(self, region_name):
         self.region_name = region_name
@@ -28,7 +33,7 @@ class AWSUtils:
                 'environment_variables': env_vars
             }
         except ClientError as e:
-            print(f"Error getting AppRunner service config: {e}")
+            logging.debug(f"Error getting AppRunner service config: {e}")
             return None
 
     def get_rds_instances(self):
@@ -47,7 +52,7 @@ class AWSUtils:
                 })
             return instances
         except ClientError as e:
-            print(f"Error getting RDS instances: {e}")
+            logging.debug(f"Error getting RDS instances: {e}")
             return []
 
     def get_db_credentials(self, secret_arn):
@@ -57,5 +62,5 @@ class AWSUtils:
             secret = json.loads(response['SecretString'])
             return secret
         except ClientError as e:
-            print(f"Error getting DB credentials: {e}")
+            logging.debug(f"Error getting DB credentials: {e}")
             return None
