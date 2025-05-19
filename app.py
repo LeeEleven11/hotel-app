@@ -16,15 +16,6 @@ aws_utils = AWSUtils('us-east-1')
 def index():
     return render_template('index.html', hotel_name='Cloud Raiser Hotel')
 
-@app.route('/apprunner')
-def apprunner_config():
-    service_arn = app.config['APPRUNNER_SERVICE_ARN']
-    if not service_arn:
-        return render_template('apprunner.html', error="APPRUNNER_SERVICE_ARN environment variable not set")
-
-    config = aws_utils.get_apprunner_service_config(service_arn)
-    return render_template('apprunner.html', config=config)
-
 @app.route('/rds')
 def rds_list():
     instances = aws_utils.get_rds_instances()
