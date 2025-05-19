@@ -1,7 +1,8 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template,jsonify, request
 from config import Config
 from aws_utils import AWSUtils
 from database import Database
+
 import logging
 import json
 
@@ -9,76 +10,11 @@ logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
 app.config.from_object(Config)
-
-aws_utils = AWSUtils(app.config['AWS_REGION'])
-
-
-def get_database_instance():
-
-
-    host = '127.0.0.1'
-    username = 'root'
-    password = 'Bing246411!'
-    try:
-        # db_secret_str = app.config['DB_SECRET_ARN']
-        # if not db_secret_str:
-        #     return None, "DB_SECRET_ARN environment variable not set"
-        # logging.info(f"get_database_instance db_secret_str:{db_secret_str}")
-        # # 解析 JSON 字符串为 Python 字典
-        # credentials = json.loads(db_secret_str)
-        # logging.info(f"成功解析数据库凭证: {credentials}")
-        #
-        # # 确保 JSON 中包含必要的连接信息
-        # host = credentials['host']
-        # username = credentials['username']
-        # password = credentials['password']
-
-
-        # 1. 先连接到默认数据库 (通常是mysql)
-        default_db = Database(
-            host=host,
-            user=username,
-            password=password,
-            # database='mysql'  # 连接到默认数据库进行检查
-            database=None  # 连接到默认数据库进行检查
-        )
-
-        # 2. 检查并创建hotel数据库
-        default_db.ensure_database_exists('hotel')
-
-        # 创建数据库实例
-        db = Database(
-            host=host,
-            user=username,
-            password=password,
-            database='hotel'
-        )
-
-        # 4. 检查并创建rooms表
-        db.ensure_table_exists()
-
-        # 测试查询，验证连接是否成功
-        rooms = db.get_all_rooms()
-
-        if rooms is None:
-            return None, "Failed to retrieve data from database. Check credentials and connectivity."
-
-        return db, None
-
-    except json.JSONDecodeError as e:
-        return None, f"Failed to parse database credentials: {str(e)}"
-    except KeyError as e:
-        return None, f"Missing key in database credentials: {e}"
-    except Exception as e:
-        # 捕获其他可能的异常
-        logging.exception("Database connection error")
-        return None, f"Database connection error: {str(e)}"
-
+aws_utils = AWSUtils('us-east-1')
 
 @app.route('/')
 def index():
-    return render_template('index.html', hotel_name=app.config['HOTEL_NAME'])
-
+    return render_template('index.html', hotel_name='Cloud Raiser Hotel')
 
 @app.route('/apprunner')
 def apprunner_config():
@@ -89,12 +25,10 @@ def apprunner_config():
     config = aws_utils.get_apprunner_service_config(service_arn)
     return render_template('apprunner.html', config=config)
 
-
 @app.route('/rds')
 def rds_list():
     instances = aws_utils.get_rds_instances()
     return render_template('rds_list.html', instances=instances)
-
 
 @app.route('/database', methods=['GET', 'POST'])
 def database():
@@ -145,5 +79,68 @@ def database():
     return render_template('database.html', rooms=rooms)
 
 
+
+def get_database_instance():
+    try:
+        db_secret_str = app.config['DB_SECRET_ARN']
+        if not db_secret_str:
+            return None, "DB_SECRET_ARN environment variable not set"
+        logging.info(f"get_database_instance db_secret_str:{db_secret_str}")
+        # 解析 JSON 字符串为 Python 字典
+        credentials = json.loads(db_secret_str)
+        logging.info(f"成功解析数据库凭证: {credentials}")
+
+        # 确保 JSON 中包含必要的连接信息
+        host = credentials['host']
+        username = credentials['username']
+        password = credentials['password']
+
+
+        # 1. 先连接到默认数据库 (通常是mysql)
+        default_db = Database(
+            host=host,
+            user=username,
+            password=password,
+            # database='mysql'  # 连接到默认数据库进行检查
+            database=None  # 连接到默认数据库进行检查
+        )
+
+        # 2. 检查并创建hotel数据库
+        default_db.ensure_database_exists('hotel')
+
+        # 创建数据库实例
+        db = Database(
+            host=host,
+            user=username,
+            password=password,
+            database='hotel'
+        )
+
+        # 4. 检查并创建rooms表
+        db.ensure_table_exists()
+
+        # 测试查询，验证连接是否成功
+        rooms = db.get_all_rooms()
+
+        if rooms is None:
+            return None, "Failed to retrieve data from database. Check credentials and connectivity."
+
+        return db, None
+
+    except json.JSONDecodeError as e:
+        return None, f"Failed to parse database credentials: {str(e)}"
+    except KeyError as e:
+        return None, f"Missing key in database credentials: {e}"
+    except Exception as e:
+        # 捕获其他可能的异常
+        logging.exception("Database connection error")
+        return None, f"Database connection error: {str(e)}"
+
+
+
+
+
 if __name__ == '__main__':
-    app.run(debug=app.config['DEBUG'], port=8080)
+    host = '0.0.0.0'
+    port = 80
+    app.run(host=host, port=port)
