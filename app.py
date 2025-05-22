@@ -74,22 +74,27 @@ def database():
 def get_database_instance():
     try:
         db_secret_str = app.config['DB_SECRET_ARN']
-        if not db_secret_str:
-            return None, "DB_SECRET_ARN environment variable not set"
-        logging.info(f"get_database_instance db_secret_str:{db_secret_str}")
+        HOTEL_DB_HOST = app.config['HOTEL_DB_HOST']
+        if not db_secret_str or not HOTEL_DB_HOST:
+            return None, "DB environment variable not set"
+        logging.info(f"get_database_instance db_secret_str:{db_secret_str}，HOTEL_DB_HOST:{HOTEL_DB_HOST}")
         # 解析 JSON 字符串为 Python 字典
         credentials = json.loads(db_secret_str)
         logging.info(f"成功解析数据库凭证: {credentials}")
 
+
         # 确保 JSON 中包含必要的连接信息
-        host = credentials['host']
+        # host = '127.0.0.1'
+        # username = 'root'
+        # password = 'Bing246411!'
+        DB_host = HOTEL_DB_HOST
         username = credentials['username']
         password = credentials['password']
 
 
         # 1. 先连接到默认数据库 (通常是mysql)
         default_db = Database(
-            host=host,
+            host=DB_host,
             user=username,
             password=password,
             # database='mysql'  # 连接到默认数据库进行检查
@@ -101,7 +106,7 @@ def get_database_instance():
 
         # 创建数据库实例
         db = Database(
-            host=host,
+            host=DB_host,
             user=username,
             password=password,
             database='hotel'
